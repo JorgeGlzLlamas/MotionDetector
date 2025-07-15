@@ -36,6 +36,7 @@ android {
 }
 
 dependencies {
+    implementation("com.google.android.gms:play-services-wearable:19.0.0")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.play.services.wearable)

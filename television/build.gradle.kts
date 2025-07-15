@@ -5,12 +5,12 @@ plugins {
 }
 
 android {
-    namespace = "com.example.motiondetector"
+    namespace = "com.example.television"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.motiondetector"
-        minSdk = 29
+        applicationId = "com.example.television"
+        minSdk = 21
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -39,20 +39,19 @@ android {
 }
 
 dependencies {
-    implementation("com.google.android.gms:play-services-wearable:19.0.0")
-    implementation(libs.play.services.wearable)
+    implementation("androidx.leanback:leanback:1.2.0")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.compose.material)
-    implementation(libs.androidx.compose.foundation)
-    implementation(libs.androidx.wear.tooling.preview)
+    implementation(libs.androidx.tv.foundation)
+    implementation(libs.androidx.tv.material)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.core.splashscreen)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    wearApp(project(":wear"))
 }
