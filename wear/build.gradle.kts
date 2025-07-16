@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.motiondetector"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.motiondetector"
@@ -39,8 +39,9 @@ android {
 }
 
 dependencies {
-    implementation("com.google.android.gms:play-services-wearable:19.0.0")
-    implementation(libs.play.services.wearable)
+    implementation("com.google.android.gms:play-services-wearable:18.1.0")
+    implementation(project(":common"))
+    implementation(project(":mobile"))
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)

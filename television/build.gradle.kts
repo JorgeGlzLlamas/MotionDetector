@@ -6,11 +6,11 @@ plugins {
 
 android {
     namespace = "com.example.television"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.television"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -39,7 +39,10 @@ android {
 }
 
 dependencies {
+    implementation("com.google.android.gms:play-services-wearable:18.1.0")
     implementation("androidx.leanback:leanback:1.2.0")
+    implementation(project(":mobile"))
+    implementation(project(":common"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(platform(libs.androidx.compose.bom))
