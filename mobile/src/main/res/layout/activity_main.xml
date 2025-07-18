@@ -88,4 +88,5 @@
         android:textColor="#BDBDBD"
         android:textSize="14sp"
         android:gravity="center" />
+
 </LinearLayout>
