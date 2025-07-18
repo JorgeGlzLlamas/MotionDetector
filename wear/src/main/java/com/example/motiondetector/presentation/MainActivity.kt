@@ -28,7 +28,6 @@ package com.example.motiondetector.presentation
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import com.example.motiondetector.SignificantMotionManager
-import com.example.motiondetector.presentation.MessageManager
 import com.example.common.MessagePaths
 import org.json.JSONObject
 import com.google.android.gms.wearable.Wearable
@@ -39,11 +38,13 @@ class MainActivity : ComponentActivity() {
 
         val messageManager = MessageManager(this)
 
-        val motionManager = SignificantMotionManager(this) {
+        val motionManager = SignificantMotionManager(this) { event ->
+            // Crear un JSON para pasar como mensaje a Mobile
             val data = JSONObject().apply {
-                put("source", "wear")
-                put("timestamp", System.currentTimeMillis())
-                put("type", "significant_motion")
+                put("source", event.source)
+                put("timestamp", event.timestamp)
+                put("gravity", event.gravity)
+                put("type", event.type)
             }
 
             Wearable.getNodeClient(this).connectedNodes

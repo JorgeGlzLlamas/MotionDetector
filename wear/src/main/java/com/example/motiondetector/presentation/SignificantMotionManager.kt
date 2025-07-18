@@ -17,7 +17,7 @@ import kotlin.math.sqrt
 @Suppress("unused")
 class SignificantMotionManager(
     private val context: Context,
-    private val onMotionHandled: () -> Unit
+    private val onMotionHandled: (MotionEventData) -> Unit
 ) {
     private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val sigMotionSensor = sensorManager.getDefaultSensor(Sensor.TYPE_SIGNIFICANT_MOTION)
@@ -87,6 +87,6 @@ class SignificantMotionManager(
 
         VibrationHandler(context).vibrateBasedOnGravity(gravity)
 
-        onMotionHandled()
+        onMotionHandled(event)
     }
 }
