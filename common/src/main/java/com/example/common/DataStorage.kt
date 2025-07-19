@@ -1,6 +1,4 @@
-package com.example.motiondetector
-
-import com.example.common.MotionEventData
+package com.example.common
 
 
 object DataStorage {

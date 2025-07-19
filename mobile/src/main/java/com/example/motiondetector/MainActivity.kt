@@ -5,8 +5,10 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import com.example.common.MessagePaths
 import com.example.common.MotionEventData
+import com.example.common.MessageManager
+import com.example.common.SignificantMotionManager
+import com.example.common.DataStorage
 import org.json.JSONObject
-
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

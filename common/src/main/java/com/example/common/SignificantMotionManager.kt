@@ -1,4 +1,4 @@
-package com.example.motiondetector
+package com.example.common
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -9,7 +9,6 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.util.Log
 import androidx.annotation.RequiresPermission
-import com.example.common.MotionEventData
 import kotlin.math.sqrt
 
 class SignificantMotionManager(

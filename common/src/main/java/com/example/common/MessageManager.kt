@@ -1,9 +1,7 @@
-package com.example.motiondetector.presentation
+package com.example.common
 
 import android.content.Context
 import android.util.Log
-import com.google.android.gms.tasks.OnFailureListener
-import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.MessageClient.OnMessageReceivedListener

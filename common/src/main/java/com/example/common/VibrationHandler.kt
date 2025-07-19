@@ -1,4 +1,4 @@
-package com.example.motiondetector.presentation
+package com.example.common
 
 import android.Manifest
 import android.content.Context
