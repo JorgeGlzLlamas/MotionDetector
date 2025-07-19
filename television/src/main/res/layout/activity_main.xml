@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layoutTV"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="64dp"
+    android:gravity="center"
+    android:background="#121212">
+
+    <!-- Título -->
+    <TextView
+        android:id="@+id/tvTituloTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="ALERTA DE MOVIMIENTO"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:gravity="center"
+        android:layout_marginBottom="48dp" />
+
+    <!-- Magnitud del movimiento -->
+    <TextView
+        android:id="@+id/tvMagnitud"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Magnitud: ---"
+        android:textSize="24sp"
+        android:textColor="#00796B"
+        android:background="#B2DFDB"
+        android:padding="16dp"
+        android:layout_marginBottom="32dp"
+        android:gravity="center" />
+
+    <!-- Origen del evento -->
+    <TextView
+        android:id="@+id/tvOrigen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Origen: Dispositivo móvil"
+        android:textSize="22sp"
+        android:textColor="#5D4037"
+        android:background="#D7CCC8"
+        android:padding="16dp"
+        android:gravity="center" />
+
+</LinearLayout>

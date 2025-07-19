@@ -4,6 +4,7 @@ plugins {
 }
 
 android {
+
     namespace = "com.example.motiondetector"
     compileSdk = 36
 
@@ -46,5 +47,4 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    wearApp(project(":wear"))
 }
