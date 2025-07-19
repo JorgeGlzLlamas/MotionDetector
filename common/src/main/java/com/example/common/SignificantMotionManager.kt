@@ -2,12 +2,14 @@ package com.example.common
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.hardware.*
+import android.util.Log
+import kotlin.math.sqrt
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.util.Log
 import androidx.annotation.RequiresPermission
 import kotlin.math.sqrt
 
@@ -16,52 +18,50 @@ class SignificantMotionManager(
     private val onMotionHandled: (MotionEventData) -> Unit
 ) {
     private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-    private val sigMotionSensor = sensorManager.getDefaultSensor(Sensor.TYPE_SIGNIFICANT_MOTION)
+    private val triggerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_SIGNIFICANT_MOTION)
+    private val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
-    private val sensorEventListener = object : SensorEventListener {
-        override fun onSensorChanged(event: SensorEvent) {
-            Log.d("SignificantMotion", "Movimiento detectado por SIGNIFICANT_MOTION")
+    private val triggerListener = object : TriggerEventListener() {
+        @RequiresPermission(Manifest.permission.VIBRATE)
+        override fun onTrigger(event: TriggerEvent?) {
+            Log.d("SignificantMotion", "✅ Movimiento detectado (TRIGGER)")
+            handleMotion(15.0) // Valor aproximado ya que el trigger no da magnitud
+        }
+    }
 
-            captureSingleAccelerometerSample()
-
+    private val accelListener = object : SensorEventListener {
+        @RequiresPermission(Manifest.permission.VIBRATE)
+        override fun onSensorChanged(e: SensorEvent) {
+            val (x, y, z) = e.values
+            val magnitude = sqrt((x * x + y * y + z * z).toDouble())
             sensorManager.unregisterListener(this)
+            Log.d("SignificantMotion", "✅ Movimiento detectado (ACCELEROMETER): $magnitude")
+            handleMotion(magnitude)
         }
 
         override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
     }
 
     fun register() {
-        if (sigMotionSensor == null) {
-            Log.w("SignificantMotion", "Sensor TYPE_SIGNIFICANT_MOTION no disponible")
-            return
-        }
-        sensorManager.registerListener(sensorEventListener, sigMotionSensor, SensorManager.SENSOR_DELAY_NORMAL)
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun captureSingleAccelerometerSample() {
-        val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) ?: run {
-            handleMotion(0.0)
-            return
-        }
-
-        val accelListener = object : SensorEventListener {
-            @RequiresPermission(Manifest.permission.VIBRATE)
-            override fun onSensorChanged(e: SensorEvent) {
-                val (x, y, z) = e.values
-                val magnitude = sqrt((x * x + y * y + z * z).toDouble())
-                sensorManager.unregisterListener(this)
-                handleMotion(magnitude)
+        when {
+            triggerSensor != null -> {
+                Log.d("SignificantMotion", "🟢 Registrando sensor de tipo TRIGGER")
+                sensorManager.requestTriggerSensor(triggerListener, triggerSensor)
             }
 
-            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
-        }
+            accelerometer != null -> {
+                Log.d("SignificantMotion", "🟡 TRIGGER no disponible, usando acelerómetro")
+                sensorManager.registerListener(
+                    accelListener,
+                    accelerometer,
+                    SensorManager.SENSOR_DELAY_NORMAL
+                )
+            }
 
-        sensorManager.registerListener(
-            accelListener,
-            accelerometer,
-            SensorManager.SENSOR_DELAY_NORMAL
-        )
+            else -> {
+                Log.w("SignificantMotion", "🔴 Ningún sensor disponible para detectar movimiento")
+            }
+        }
     }
 
     @RequiresPermission(Manifest.permission.VIBRATE)
@@ -79,7 +79,7 @@ class SignificantMotionManager(
         )
 
         DataStorage.addEvent(event)
-        Log.d("SignificantMotion", "Evento guardado: $event")
+        Log.d("SignificantMotion", "💾 Evento guardado: $event")
 
         VibrationHandler(context).vibrateBasedOnGravity(gravity)
 
