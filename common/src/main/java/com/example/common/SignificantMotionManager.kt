@@ -67,8 +67,8 @@ class SignificantMotionManager(
     @RequiresPermission(Manifest.permission.VIBRATE)
     private fun handleMotion(magnitude: Double) {
         val gravity = when {
-            magnitude > 20 -> "fuerte"
-            magnitude > 13 -> "medio"
+            magnitude > 16 -> "fuerte"
+            magnitude > 9 -> "medio"
             else -> "leve"
         }
 
