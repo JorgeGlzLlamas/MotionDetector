@@ -67,9 +67,9 @@ class SignificantMotionManager(
     @RequiresPermission(Manifest.permission.VIBRATE)
     private fun handleMotion(magnitude: Double) {
         val gravity = when {
-            magnitude > 16 -> "fuerte"
-            magnitude > 9 -> "medio"
-            else -> "leve"
+            magnitude > 13.5 -> "fuerte"
+            magnitude > 10.3 -> "medio"
+            else -> "leve" // Reposo o movimientos muy suaves
         }
 
         val event = MotionEventData(
@@ -85,4 +85,5 @@ class SignificantMotionManager(
 
         onMotionHandled(event)
     }
+
 }
