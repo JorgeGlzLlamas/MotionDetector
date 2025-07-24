@@ -52,4 +52,5 @@
                 android:padding="8dp" />
         </LinearLayout>
     </ScrollView>
+
 </androidx.wear.widget.BoxInsetLayout>
