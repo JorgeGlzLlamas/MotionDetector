@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    kotlin("plugin.serialization") version "1.9.24"
 }
 
 android {
@@ -33,8 +34,11 @@ android {
 }
 
 dependencies {
-    implementation("com.google.android.gms:play-services-wearable:18.1.0")
+    implementation("com.google.android.gms:play-services-wearable:19.0.0")
     implementation("androidx.leanback:leanback:1.2.0")
+    implementation("io.ktor:ktor-client-serialization:2.2.4")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.11")
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)

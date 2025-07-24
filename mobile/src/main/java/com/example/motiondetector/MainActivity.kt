@@ -5,7 +5,18 @@ import android.util.Log
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import com.example.common.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.json.JSONObject
+import io.ktor.client.*
+import io.ktor.client.engine.android.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.http.*
+import kotlinx.serialization.json.Json
+import io.ktor.serialization.kotlinx.json.*
 
 class MainActivity : ComponentActivity() {
 
@@ -14,6 +25,13 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var motionManager: AccelerometerMotionManager
     private lateinit var messageManager: MessageManager
+
+    // ⬇️ Cliente Ktor configurado para enviar eventos
+    private val ktorClient = HttpClient(Android) {
+        install(ContentNegotiation) {
+            json(Json { ignoreUnknownKeys = true })
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,7 +46,19 @@ class MainActivity : ComponentActivity() {
         motionManager = AccelerometerMotionManager(this) { event ->
             runOnUiThread { updateUI(event) }
             Log.d("Mobile", "Evento LOCAL guardado: $event")
+
+            // ⬇️ Añadir llamada para enviar evento a la TV
+            sendEventToTv(event)
         }
+        val simulatedEvent = MotionEventData(
+            source = "mobile-test",
+            timestamp = System.currentTimeMillis(),
+            gravity = "[0.0, 9.8, 0.0]",
+            type = "TEST"
+        )
+
+        Log.d("Mobile", "🧪 Enviando evento simulado a TV: $simulatedEvent")
+        sendEventToTv(simulatedEvent)
 
         // Escuchar eventos remotos (del Wear)
         messageManager.setListener { path, msg ->
@@ -60,5 +90,24 @@ class MainActivity : ComponentActivity() {
     private fun updateUI(event: MotionEventData) {
         tvTimestamp.text = "Timestamp: ${event.timestamp}"
         tvGravedad.text = "Gravity: ${event.gravity}"
+    }
+
+    // ⬇️ NUEVA función para enviar el evento al servidor (TV)
+    private fun sendEventToTv(event: MotionEventData) {
+        val serverUrl = "http://10.0.2.2:8081/motion"
+        Log.d("Mobile", "🔗 Enviando evento a URL: $serverUrl")
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                Log.d("Mobile", "⏳ Enviando evento a TV...")
+                val response: HttpResponse = ktorClient.post(serverUrl) {
+                    contentType(ContentType.Application.Json)
+                    setBody(event)
+                }
+                Log.d("Mobile", "Evento enviado a TV: ${response.status}")
+            } catch (e: Exception) {
+                Log.e("Mobile", "Error enviando evento a TV", e)
+            }
+        }
     }
 }

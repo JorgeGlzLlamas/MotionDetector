@@ -39,8 +39,11 @@ android {
 }
 
 dependencies {
-    implementation("com.google.android.gms:play-services-wearable:18.1.0")
     implementation("androidx.leanback:leanback:1.2.0")
+    implementation("io.ktor:ktor-server-core-jvm:2.3.11")
+    implementation("io.ktor:ktor-server-cio-jvm:2.3.11")
+    implementation("io.ktor:ktor-server-content-negotiation-jvm:2.3.11")
+    implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:2.3.11")
     implementation(project(":common"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
