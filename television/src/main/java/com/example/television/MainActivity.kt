@@ -3,23 +3,32 @@ package com.example.television
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
-import com.example.common.MessageManager
-import com.example.common.MessagePaths
-
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import androidx.lifecycle.lifecycleScope
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var webServer: WebServer
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContentView(R.layout.activity_main)
 
-        val messageManager = MessageManager(this)
+        Log.d("TV", "🟢 onCreate iniciado, preparando servidor...")
 
-        messageManager.setListener { path, msg ->
-            if (path == MessagePaths.MOTION_PATH) {
-                Log.d("TV", "Alerta de movimiento: $msg")
-                // Aquí puedes actualizar UI con datos del móvil
-            }
+        webServer = WebServer { event ->
+            Log.d("TV", "🎯 Evento procesado: $event")
         }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            webServer.start()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("TV", "🛑 onDestroy: Deteniendo servidor...")
+        webServer.stop()
     }
 }

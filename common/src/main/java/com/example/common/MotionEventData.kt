@@ -1,5 +1,8 @@
 package com.example.common
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class MotionEventData(
     val source: String,
     val timestamp: Long,

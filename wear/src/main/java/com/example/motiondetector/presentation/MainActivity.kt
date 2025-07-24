@@ -2,20 +2,22 @@ package com.example.motiondetector.presentation
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import com.example.common.SignificantMotionManager
+import com.example.common.*
 import com.example.common.MessagePaths
-import org.json.JSONObject
 import com.google.android.gms.wearable.Wearable
-import com.example.common.MessageManager
+import org.json.JSONObject
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var motionManager: AccelerometerMotionManager
+    private lateinit var messageManager: MessageManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val messageManager = MessageManager(this)
+        messageManager = MessageManager(this)
 
-        val motionManager = SignificantMotionManager(this) { event ->
-            // Crear un JSON para pasar como mensaje a Mobile
+        motionManager = AccelerometerMotionManager(this) { event ->
             val data = JSONObject().apply {
                 put("source", event.source)
                 put("timestamp", event.timestamp)
@@ -32,5 +34,15 @@ class MainActivity : ComponentActivity() {
         }
 
         motionManager.register()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        motionManager.register()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        motionManager.unregister()
     }
 }
