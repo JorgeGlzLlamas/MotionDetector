@@ -17,32 +17,52 @@
         android:textSize="28sp"
         android:textStyle="bold"
         android:textColor="#FFFFFF"
-        android:gravity="center"
         android:layout_marginBottom="48dp" />
 
-    <!-- Magnitud del movimiento -->
+    <!-- Gravedad/magnitud -->
+
     <TextView
         android:id="@+id/tvMagnitud"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Magnitud: ---"
+        android:text="Gravedad: ---"
         android:textSize="24sp"
         android:textColor="#00796B"
         android:background="#B2DFDB"
         android:padding="16dp"
-        android:layout_marginBottom="32dp"
-        android:gravity="center" />
+        android:layout_marginBottom="24dp" />
 
     <!-- Origen del evento -->
     <TextView
         android:id="@+id/tvOrigen"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Origen: Dispositivo móvil"
+        android:text="Origen: ---"
         android:textSize="22sp"
         android:textColor="#5D4037"
         android:background="#D7CCC8"
         android:padding="16dp"
-        android:gravity="center" />
+        android:layout_marginBottom="24dp"/>
+
+    <!-- Tipo de movimiento -->
+    <TextView
+        android:id="@+id/tvTipoMovimiento"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tipo: ---"
+        android:textSize="22sp"
+        android:textColor="#283593"
+        android:background="#C5CAE9"
+        android:layout_marginBottom="24sp" />
+
+    <!-- Fecha legible -->
+    <TextView
+        android:id="@+id/tvTimestamp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Fecha: ---"
+        android:textSize="20sp"
+        android:background="#BDBDBD" />
+
 
 </LinearLayout>
