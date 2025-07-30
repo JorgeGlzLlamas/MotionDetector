@@ -1,7 +1,9 @@
 package com.example.motiondetector
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import com.example.common.*
@@ -36,6 +38,15 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Referencia a boton
+        val btnActividades = findViewById<Button>(R.id.btnActividades)
+
+        // Listener para abrir la actividad Actividades.kt
+        btnActividades.setOnClickListener {
+            val intent = Intent(this, Actividades::class.java)
+            startActivity(intent)
+        }
 
         tvGravedad = findViewById(R.id.tvGravedad)
         tvTimestamp = findViewById(R.id.tvTimestamp)
