@@ -8,6 +8,8 @@ import androidx.activity.ComponentActivity
 import com.example.common.*
 import com.google.android.gms.wearable.Wearable
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : ComponentActivity() {
 
@@ -20,7 +22,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(com.example.motiondetector.R.layout.activity_main)
 
-        // Refrencias de views
+        // Referencias de views
         tvDeviceStatus = findViewById(com.example.motiondetector.R.id.tvDeviceStatus)
         btnActividades = findViewById(com.example.motiondetector.R.id.btnActividades)
 
@@ -30,11 +32,12 @@ class MainActivity : ComponentActivity() {
             startActivity(intent)
         }
 
-        // Mostrar estado del dispositivo conectado
+        // Mostrar nombre del dispositivo conectado
         Wearable.getNodeClient(this).connectedNodes
             .addOnSuccessListener { nodes ->
                 if (nodes.isNotEmpty()) {
-                    tvDeviceStatus.text = "Dispositivo conectado"
+                    val deviceName = nodes.joinToString { it.displayName }
+                    tvDeviceStatus.text = "Conectado a: $deviceName"
                 } else {
                     tvDeviceStatus.text = "Dispositivo no conectado"
                 }
@@ -46,9 +49,12 @@ class MainActivity : ComponentActivity() {
         // Inicializa los managers
         messageManager = MessageManager(this)
         motionManager = AccelerometerMotionManager(this) { event ->
+
+            val formattedDate = convertTimestampToDate(event.timestamp)
+
             val data = JSONObject().apply {
                 put("source", event.source)
-                put("timestamp", event.timestamp)
+                put("timestamp", formattedDate) // fecha legible
                 put("gravity", event.gravity)
                 put("type", event.type)
             }
@@ -72,5 +78,10 @@ class MainActivity : ComponentActivity() {
     override fun onPause() {
         super.onPause()
         motionManager.unregister()
+    }
+
+    private fun convertTimestampToDate(timestamp: Long): String {
+        val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
+        return sdf.format(Date(timestamp))
     }
 }
