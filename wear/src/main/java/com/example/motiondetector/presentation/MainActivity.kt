@@ -18,11 +18,17 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(com.example.motiondetector.R.layout.activity_main) // Vincula el layout XML
+        setContentView(com.example.motiondetector.R.layout.activity_main)
 
-        // Referencias de vistas
+        // Refrencias de views
         tvDeviceStatus = findViewById(com.example.motiondetector.R.id.tvDeviceStatus)
         btnActividades = findViewById(com.example.motiondetector.R.id.btnActividades)
+
+        // Acción del botón para abrir actividades
+        btnActividades.setOnClickListener {
+            val intent = Intent(this, ActividadesActivity::class.java)
+            startActivity(intent)
+        }
 
         // Mostrar estado del dispositivo conectado
         Wearable.getNodeClient(this).connectedNodes
@@ -36,12 +42,6 @@ class MainActivity : ComponentActivity() {
             .addOnFailureListener {
                 tvDeviceStatus.text = "Error al verificar conexión"
             }
-
-        // Acción del botón para abrir actividades
-        btnActividades.setOnClickListener {
-            val intent = Intent(this, ActividadesActivity::class.java)
-            startActivity(intent)
-        }
 
         // Inicializa los managers
         messageManager = MessageManager(this)
