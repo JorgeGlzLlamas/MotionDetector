@@ -1,31 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/actividadesLayout"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
     android:background="#121212"
-    android:padding="24dp">
+    android:fillViewport="true">
 
-    <TextView
-        android:id="@+id/tvTituloActividades"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/actividadesLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Actividades"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textColor="#FFFFFF"
-        android:gravity="center"
-        android:layout_marginBottom="16dp" />
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="24dp">
 
-    <TextView
-        android:id="@+id/tvContenido"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Actividades registradas."
-        android:textSize="14sp"
-        android:textColor="#BDBDBD"
-        android:gravity="center" />
+        <TextView
+            android:id="@+id/tvTituloActividades"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:gravity="center"
+            android:text="Actividades\nSimuladas"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
-</LinearLayout>
+
+        <!-- BOTONES AÑADIDOS -->
+
+        <Button
+            android:id="@+id/btnSimularCaida"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="#333333"
+            android:text="Simular caída"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/btnCorrer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="#333333"
+            android:text="Correr"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/btnGolpearMesa"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:backgroundTint="#333333"
+            android:text="Golpear la mesa"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+</ScrollView>

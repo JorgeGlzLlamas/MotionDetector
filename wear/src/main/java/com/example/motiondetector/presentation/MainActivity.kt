@@ -8,8 +8,6 @@ import androidx.activity.ComponentActivity
 import com.example.common.*
 import com.google.android.gms.wearable.Wearable
 import org.json.JSONObject
-import java.text.SimpleDateFormat
-import java.util.*
 
 class MainActivity : ComponentActivity() {
 
@@ -22,16 +20,21 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(com.example.motiondetector.R.layout.activity_main)
 
-        // Referencias de vistas
+        // Refrencias de views
         tvDeviceStatus = findViewById(com.example.motiondetector.R.id.tvDeviceStatus)
         btnActividades = findViewById(com.example.motiondetector.R.id.btnActividades)
 
-        // 1️⃣ Mostrar el nombre del dispositivo móvil conectado
+        // Acción del botón para abrir actividades
+        btnActividades.setOnClickListener {
+            val intent = Intent(this, ActividadesActivity::class.java)
+            startActivity(intent)
+        }
+
+        // Mostrar estado del dispositivo conectado
         Wearable.getNodeClient(this).connectedNodes
             .addOnSuccessListener { nodes ->
                 if (nodes.isNotEmpty()) {
-                    val nodeName = nodes.first().displayName
-                    tvDeviceStatus.text = "Conectado a: $nodeName"
+                    tvDeviceStatus.text = "Dispositivo conectado"
                 } else {
                     tvDeviceStatus.text = "Dispositivo no conectado"
                 }
@@ -40,36 +43,20 @@ class MainActivity : ComponentActivity() {
                 tvDeviceStatus.text = "Error al verificar conexión"
             }
 
-        // 2️⃣ Acción del botón para abrir actividades
-        btnActividades.setOnClickListener {
-            val intent = Intent(this, ActividadesActivity::class.java)
-            startActivity(intent)
-        }
-
-        // 3️⃣ Inicializa los managers
+        // Inicializa los managers
         messageManager = MessageManager(this)
         motionManager = AccelerometerMotionManager(this) { event ->
-            // Convertimos el timestamp a fecha legible
-            val readableDate = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
-                .format(Date(event.timestamp))
-
-            // Creamos el JSON del evento
             val data = JSONObject().apply {
                 put("source", event.source)
-                put("timestamp", readableDate) // Enviamos la fecha legible ya convertida
+                put("timestamp", event.timestamp)
                 put("gravity", event.gravity)
                 put("type", event.type)
             }
 
-            // Enviamos el mensaje a todos los nodos conectados
             Wearable.getNodeClient(this).connectedNodes
                 .addOnSuccessListener { nodes ->
                     nodes.forEach { node ->
-                        messageManager.sendMessage(
-                            node.id,
-                            MessagePaths.MOTION_PATH,
-                            data.toString()
-                        )
+                        messageManager.sendMessage(node.id, MessagePaths.MOTION_PATH, data.toString())
                     }
                 }
         }
