@@ -13,8 +13,12 @@ import java.util.*
 class MainActivity : ComponentActivity() {
 
     private lateinit var webServer: WebServer
-
     private val dateFormatter = SimpleDateFormat("HH:mm:ss  dd/MM/yyyy", Locale.getDefault())
+
+    private lateinit var tvTitulo: TextView
+    private lateinit var tvMagnitud: TextView
+    private lateinit var tvTimestamp: TextView
+    private lateinit var tvActividad: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -22,24 +26,34 @@ class MainActivity : ComponentActivity() {
 
         Log.d("TV", "🟢 Servidor iniciando…")
 
+        // Referencias a vistas
+        tvTitulo = findViewById(R.id.tvTituloTV)
+        tvMagnitud = findViewById(R.id.tvMagnitud)
+        tvTimestamp = findViewById(R.id.tvTimestamp)
+        tvActividad = findViewById(R.id.tvActividad)
+
+        // Iniciar servidor y escuchar eventos
         webServer = WebServer { event ->
             Log.d("TV", "🎯 Evento recibido: $event")
 
             runOnUiThread {
-                findViewById<TextView>(R.id.tvMagnitud).text =
-                    "Gravedad: ${event.gravity}"
+                // Cambiar título si hay evento
+                tvTitulo.text = "Movimiento detectado"
+
+                // Mostrar datos del evento
+                tvMagnitud.text = "Gravedad: ${event.gravity}"
 
                 val fechaLegible = dateFormatter.format(Date(event.timestamp))
-                findViewById<TextView>(R.id.tvTimestamp).text =
-                    "Fecha: $fechaLegible"
+                tvTimestamp.text = "Fecha: $fechaLegible"
 
                 val actividad = event.activity ?: "Desconocida"
-                findViewById<TextView>(R.id.tvActividad).text =
-                    "Actividad: $actividad"
+                tvActividad.text = "Actividad: $actividad"
             }
         }
 
-        lifecycleScope.launch(Dispatchers.IO) { webServer.start() }
+        lifecycleScope.launch(Dispatchers.IO) {
+            webServer.start()
+        }
     }
 
     override fun onDestroy() {

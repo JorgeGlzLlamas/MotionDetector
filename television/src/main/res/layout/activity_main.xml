@@ -4,50 +4,63 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="64dp"
     android:gravity="center"
-    android:background="#121212">
+    android:background="#121212"
+    android:paddingLeft="64dp"
+    android:paddingRight="64dp"
+    android:paddingTop="48dp"
+    android:paddingBottom="48dp">
 
-    <!-- Título -->
+    <!-- Título dinámico -->
     <TextView
         android:id="@+id/tvTituloTV"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="ALERTA DE MOVIMIENTO"
-        android:textSize="28sp"
+        android:text="Esperando movimiento"
+        android:textSize="36sp"
         android:textStyle="bold"
-        android:textColor="#FFFFFF"
-        android:layout_marginBottom="48dp" />
+        android:textColor="#FFEB3B"
+        android:gravity="center"
+        android:layout_marginBottom="64dp" />
 
-    <!-- Gravedad/magnitud -->
+    <!-- Gravedad -->
     <TextView
         android:id="@+id/tvMagnitud"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Gravedad: ---"
-        android:textSize="24sp"
-        android:textColor="#00796B"
-        android:background="#B2DFDB"
-        android:padding="16dp"
-        android:layout_marginBottom="24dp" />
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="#212121"
+        android:background="#4CAF50"
+        android:gravity="center"
+        android:padding="24dp"
+        android:layout_marginBottom="32dp"
+        android:elevation="4dp" />
 
-    <!-- Fecha legible -->
+    <!-- Fecha -->
     <TextView
         android:id="@+id/tvTimestamp"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Fecha: ---"
-        android:textSize="20sp"
-        android:background="#BDBDBD" />
+        android:textSize="22sp"
+        android:textColor="#FFFFFF"
+        android:background="#424242"
+        android:gravity="center"
+        android:padding="16dp"
+        android:layout_marginBottom="32dp" />
 
-    <!-- Actividad simulada -->
+    <!-- Actividad -->
     <TextView
         android:id="@+id/tvActividad"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Actividad: ---"
-        android:textSize="20sp"
+        android:textSize="22sp"
         android:textColor="#FFFFFF"
-        android:layout_marginTop="24dp" />
+        android:background="#616161"
+        android:gravity="center"
+        android:padding="16dp" />
 
 </LinearLayout>
