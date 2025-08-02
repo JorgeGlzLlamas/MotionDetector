@@ -5,6 +5,7 @@ import android.widget.Button
 import androidx.activity.ComponentActivity
 import com.example.common.MessageManager
 import com.example.motiondetector.R
+import com.google.android.gms.wearable.Wearable // ✅ IMPORT CORRECTO
 
 class ActividadesActivity : ComponentActivity() {
 
@@ -16,22 +17,22 @@ class ActividadesActivity : ComponentActivity() {
 
         messageManager = MessageManager(applicationContext)
 
-        // Simular caída
+        // Referencias a los botones del layout
         val btnSimularCaida = findViewById<Button>(R.id.btnSimularCaida)
-        btnSimularCaida.setOnClickListener {
-            sendSimulatedEvent("caida_simulada")
-        }
-
-        // Correr
         val btnCorrer = findViewById<Button>(R.id.btnCorrer)
-        btnCorrer.setOnClickListener {
-            sendSimulatedEvent("correr_simulado")
+        val btnGolpearMesa = findViewById<Button>(R.id.btnGolpearMesa)
+
+        // Eventos simulados
+        btnSimularCaida.setOnClickListener {
+            sendSimulatedEvent("Nivel medio")
         }
 
-        // Golpear la mesa
-        val btnGolpearMesa = findViewById<Button>(R.id.btnGolpearMesa)
+        btnCorrer.setOnClickListener {
+            sendSimulatedEvent("Nivel leve")
+        }
+
         btnGolpearMesa.setOnClickListener {
-            sendSimulatedEvent("golpe_mesa_simulado")
+            sendSimulatedEvent("Nivel fuerte")
         }
     }
 

@@ -74,23 +74,41 @@ class MainActivity : ComponentActivity() {
         // Inicializa messageManager para escuchar eventos remotos (ej. de Wear OS)
         messageManager = MessageManager(this)
         messageManager.setListener { path, msg ->
-            if (path == MessagePaths.MOTION_PATH) {
-                val json = JSONObject(msg)
-                val gravity = json.optString("gravity", "---")
-                val timestampRaw = json.optLong("timestamp", 0L)
+            when (path) {
+                MessagePaths.MOTION_PATH -> {
+                    val json = JSONObject(msg)
+                    val gravity = json.optString("gravity", "---")
+                    val timestampRaw = json.optLong("timestamp", 0L)
 
-                val timestampText = if (timestampRaw > 0) {
-                    val sdf = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss", java.util.Locale.getDefault())
-                    sdf.format(java.util.Date(timestampRaw))
-                } else {
-                    "Desconocido"
+                    val timestampText = if (timestampRaw > 0) {
+                        val sdf = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss", java.util.Locale.getDefault())
+                        sdf.format(java.util.Date(timestampRaw))
+                    } else {
+                        "Desconocido"
+                    }
+
+                    runOnUiThread {
+                        tvGravedad.text = "Gravedad: $gravity"
+                        tvTimestamp.text = "Fecha: $timestampText"
+                        tvUltimaAlerta.text = "Última alerta recibida"
+                        updateSimulatedLevelUI(gravity) // Actualiza barra visual según mensaje recibido
+                    }
                 }
-
-                runOnUiThread {
-                    tvGravedad.text = "Gravedad: $gravity"
-                    tvTimestamp.text = "Fecha: $timestampText"
-                    tvUltimaAlerta.text = "Última alerta recibida"
-                    updateSimulatedLevelUI(gravity) // Actualiza barra visual según mensaje recibido
+                "/evento_simulado" -> {
+                    // Aquí el mensaje es el nombre del evento simulado, ej "caida_simulada"
+                    runOnUiThread {
+                        tvGravedad.text = "Evento detectado de wear: $msg"
+                        tvTimestamp.text = "Fecha: Simulado"
+                        tvUltimaAlerta.text = "Última alerta recibida"
+                        updateSimulatedLevelUI(
+                            when (msg) {
+                                "caida_simulada" -> "fuerte"
+                                "correr_simulado" -> "medio"
+                                "golpe_mesa_simulado" -> "medio-fuerte"
+                                else -> "leve"
+                            }
+                        )
+                    }
                 }
             }
         }
