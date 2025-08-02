@@ -9,33 +9,16 @@ import androidx.activity.ComponentActivity
 import android.view.View
 import android.widget.LinearLayout
 import com.example.common.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.json.JSONObject
-import io.ktor.client.*
-import io.ktor.client.engine.android.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.http.*
-import kotlinx.serialization.json.Json
-import io.ktor.serialization.kotlinx.json.*
+
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var tvGravedad: TextView
-    private lateinit var tvTimestamp: TextView
+    private lateinit var tvTitulo: TextView
 
     private lateinit var motionManager: AccelerometerMotionManager
     private lateinit var messageManager: MessageManager
-
-    // Cliente Ktor para enviar datos al servidor
-    private val ktorClient = HttpClient(Android) {
-        install(ContentNegotiation) {
-            json(Json { ignoreUnknownKeys = true })
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,9 +31,9 @@ class MainActivity : ComponentActivity() {
             startActivity(intent)
         }
 
-        // Referencias a TextViews de gravedad y timestamp
+        // Referencias a TextViews
         tvGravedad = findViewById(R.id.tvGravedad)
-        tvTimestamp = findViewById(R.id.tvTimestamp)
+        tvTitulo = findViewById(R.id.tvTitulo)
 
         // Inicializa el detector de movimiento con callback para actualizar UI y enviar evento
         motionManager = AccelerometerMotionManager(this) { event ->
@@ -59,14 +42,14 @@ class MainActivity : ComponentActivity() {
                 updateSimulatedLevelUI(event.gravity) // Actualiza barra visual según gravedad
             }
             Log.d("Mobile", "Evento LOCAL guardado: $event")
-            sendEventToTv(event) // Envía evento al servidor (TV)
+            KtorClient.sendEvent(event) // Envía evento al servidor (TV)
         }
 
         // Si la actividad fue llamada con un nivel simulado, actualiza la UI con ese nivel
         intent.getStringExtra("simulated_level")?.let {
             updateSimulatedLevelUI(it)
-            tvGravedad.text = "Gravity: $it"
-            tvTimestamp.text = "Timestamp: Simulado"
+            tvGravedad.text = "$it"
+            tvTitulo.text = "Movimiento\nDetectado"
         }
 
         // Inicializa messageManager para escuchar eventos remotos (ej. de Wear OS)
@@ -102,8 +85,8 @@ class MainActivity : ComponentActivity() {
 
     // Actualiza textos con datos de evento
     private fun updateUI(event: MotionEventData) {
-        tvTimestamp.text = "Timestamp: ${event.timestamp}"
-        tvGravedad.text = "Gravity: ${event.gravity}"
+        tvGravedad.text = "${event.gravity}"
+        tvTitulo.text = "Movimiento\nDetectado"
     }
 
     // Actualiza la barra de gravedad según nivel simulado o real
@@ -153,23 +136,5 @@ class MainActivity : ComponentActivity() {
         barraVerde.requestLayout()
         barraAmarilla.requestLayout()
         barraRoja.requestLayout()
-    }
-
-    // Envía el evento de movimiento al servidor (TV)
-    private fun sendEventToTv(event: MotionEventData) {
-        val serverUrl = "http://10.0.2.2:8081/motion"
-        Log.d("Mobile", "🔗 Enviando evento a URL: $serverUrl")
-
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response: HttpResponse = ktorClient.post(serverUrl) {
-                    contentType(ContentType.Application.Json)
-                    setBody(event)
-                }
-                Log.d("Mobile", "Evento enviado a TV: ${response.status}")
-            } catch (e: Exception) {
-                Log.e("Mobile", "Error enviando evento a TV", e)
-            }
-        }
     }
 }

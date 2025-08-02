@@ -13,40 +13,52 @@ import java.util.*
 class MainActivity : ComponentActivity() {
 
     private lateinit var webServer: WebServer
-
-    //‑‑‑ Formateador de fecha legible (HH:mm:ss dd/MM/yyyy) ‑‑‑
     private val dateFormatter = SimpleDateFormat("HH:mm:ss  dd/MM/yyyy", Locale.getDefault())
+
+    private lateinit var tvTitulo: TextView
+    private lateinit var tvMagnitud: TextView
+    private lateinit var tvTimestamp: TextView
+    private lateinit var tvActividad: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        Log.d("TV", "🟢 Servidor iniciando…")
+        Log.d("TV", "🟢 Servidor iniciando…")
 
+        // Referencias a vistas
+        tvTitulo = findViewById(R.id.tvTituloTV)
+        tvMagnitud = findViewById(R.id.tvMagnitud)
+        tvTimestamp = findViewById(R.id.tvTimestamp)
+        tvActividad = findViewById(R.id.tvActividad)
+
+        // Iniciar servidor y escuchar eventos
         webServer = WebServer { event ->
-            Log.d("TV", "🎯 Evento recibido: $event")
+            Log.d("TV", "🎯 Evento recibido: $event")
 
             runOnUiThread {
-                //‑‑ Referencias a cada TextView
-                findViewById<TextView>(R.id.tvMagnitud).text       =
-                    "Gravedad: ${event.gravity}"
-                findViewById<TextView>(R.id.tvOrigen).text         =
-                    "Origen: ${event.source}"
-                findViewById<TextView>(R.id.tvTipoMovimiento).text =
-                    "Tipo: ${event.type}"
+                // Cambiar título si hay evento
+                tvTitulo.text = "Movimiento detectado"
+
+                // Mostrar datos del evento
+                tvMagnitud.text = "Gravedad: ${event.gravity}"
+
                 val fechaLegible = dateFormatter.format(Date(event.timestamp))
-                findViewById<TextView>(R.id.tvTimestamp).text      =
-                    "Fecha: $fechaLegible"
+                tvTimestamp.text = "Fecha: $fechaLegible"
+
+                val actividad = event.activity ?: "Desconocida"
+                tvActividad.text = "Actividad: $actividad"
             }
         }
 
-        //‑‑ Levantar servidor en segundo plano
-        lifecycleScope.launch(Dispatchers.IO) { webServer.start() }
+        lifecycleScope.launch(Dispatchers.IO) {
+            webServer.start()
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d("TV", "🛑 Servidor detenido")
+        Log.d("TV", "🛑 Servidor detenido")
         webServer.stop()
     }
 }

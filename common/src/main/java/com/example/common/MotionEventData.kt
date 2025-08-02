@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 data class MotionEventData(
     val source: String,
     val timestamp: Long,
-    val gravity: String, // leve, medio, fuerte
-    val type: String = "significant_motion"
+    val gravity: String,
+    val type: String,
+    val activity: String? = null
 )
