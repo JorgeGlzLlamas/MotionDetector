@@ -26,12 +26,11 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var tvGravedad: TextView
     private lateinit var tvTimestamp: TextView
-    private lateinit var tvUltimaAlerta: TextView
 
     private lateinit var motionManager: AccelerometerMotionManager
     private lateinit var messageManager: MessageManager
 
-    // Cliente Ktor para enviar datos al servidor ayudame por favor
+    // Cliente Ktor para enviar datos al servidor
     private val ktorClient = HttpClient(Android) {
         install(ContentNegotiation) {
             json(Json { ignoreUnknownKeys = true })
@@ -42,17 +41,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Referencias a TextViews de gravedad, timestamp y ultima alerta
-        tvGravedad = findViewById(R.id.tvGravedad)
-        tvTimestamp = findViewById(R.id.tvTimestamp)
-        tvUltimaAlerta = findViewById(R.id.tvUltimaAlerta)
-
         // Botón para abrir actividad Actividades
         val btnActividades = findViewById<Button>(R.id.btnActividades)
         btnActividades.setOnClickListener {
             val intent = Intent(this, Actividades::class.java)
             startActivity(intent)
         }
+
+        // Referencias a TextViews de gravedad y timestamp
+        tvGravedad = findViewById(R.id.tvGravedad)
+        tvTimestamp = findViewById(R.id.tvTimestamp)
 
         // Inicializa el detector de movimiento con callback para actualizar UI y enviar evento
         motionManager = AccelerometerMotionManager(this) { event ->
@@ -61,7 +59,7 @@ class MainActivity : ComponentActivity() {
                 updateSimulatedLevelUI(event.gravity) // Actualiza barra visual según gravedad
             }
             Log.d("Mobile", "Evento LOCAL guardado: $event")
-            sendEventToTv(event) // Envía evento al servidor (TV)
+            KtorClient.sendEvent(event) // Envía evento al servidor (TV)
         }
 
         // Si la actividad fue llamada con un nivel simulado, actualiza la UI con ese nivel
@@ -74,42 +72,20 @@ class MainActivity : ComponentActivity() {
         // Inicializa messageManager para escuchar eventos remotos (ej. de Wear OS)
         messageManager = MessageManager(this)
         messageManager.setListener { path, msg ->
-            when (path) {
-                MessagePaths.MOTION_PATH -> {
-                    val json = JSONObject(msg)
-                    val gravity = json.optString("gravity", "---")
-                    val timestampRaw = json.optLong("timestamp", 0L)
-
-                    val timestampText = if (timestampRaw > 0) {
-                        val sdf = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss", java.util.Locale.getDefault())
-                        sdf.format(java.util.Date(timestampRaw))
-                    } else {
-                        "Desconocido"
-                    }
-
-                    runOnUiThread {
-                        tvGravedad.text = "Gravedad: $gravity"
-                        tvTimestamp.text = "Fecha: $timestampText"
-                        tvUltimaAlerta.text = "Última alerta recibida"
-                        updateSimulatedLevelUI(gravity) // Actualiza barra visual según mensaje recibido
-                    }
+            if (path == MessagePaths.MOTION_PATH) {
+                val json = JSONObject(msg)
+                val event = MotionEventData(
+                    source = json.getString("source"),
+                    timestamp = json.getLong("timestamp"),
+                    gravity = json.getString("gravity"),
+                    type = json.getString("type")
+                )
+                DataStorage.addEvent(event)
+                runOnUiThread {
+                    updateUI(event)
+                    updateSimulatedLevelUI(event.gravity)
                 }
-                "/evento_simulado" -> {
-                    // Aquí el mensaje es el nombre del evento simulado, ej "caida_simulada"
-                    runOnUiThread {
-                        tvGravedad.text = "Evento detectado de wear: $msg"
-                        tvTimestamp.text = "Fecha: Simulado"
-                        tvUltimaAlerta.text = "Última alerta recibida"
-                        updateSimulatedLevelUI(
-                            when (msg) {
-                                "caida_simulada" -> "fuerte"
-                                "correr_simulado" -> "medio"
-                                "golpe_mesa_simulado" -> "medio-fuerte"
-                                else -> "leve"
-                            }
-                        )
-                    }
-                }
+                Log.d("Mobile", "Evento REMOTO guardado: $event")
             }
         }
     }
@@ -177,23 +153,5 @@ class MainActivity : ComponentActivity() {
         barraVerde.requestLayout()
         barraAmarilla.requestLayout()
         barraRoja.requestLayout()
-    }
-
-    // Envía el evento de movimiento al servidor (TV)
-    private fun sendEventToTv(event: MotionEventData) {
-        val serverUrl = "http://10.0.2.2:8081/motion"
-        Log.d("Mobile", "🔗 Enviando evento a URL: $serverUrl")
-
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val response: HttpResponse = ktorClient.post(serverUrl) {
-                    contentType(ContentType.Application.Json)
-                    setBody(event)
-                }
-                Log.d("Mobile", "Evento enviado a TV: ${response.status}")
-            } catch (e: Exception) {
-                Log.e("Mobile", "Error enviando evento a TV", e)
-            }
-        }
     }
 }

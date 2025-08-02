@@ -20,40 +20,16 @@
         android:layout_marginBottom="48dp" />
 
     <!-- Gravedad/magnitud -->
-
     <TextView
         android:id="@+id/tvMagnitud"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Gravedad: ---"
+        android:text="Gravedad: ---"
         android:textSize="24sp"
         android:textColor="#00796B"
         android:background="#B2DFDB"
         android:padding="16dp"
         android:layout_marginBottom="24dp" />
-
-    <!-- Origen del evento -->
-    <TextView
-        android:id="@+id/tvOrigen"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Origen: ---"
-        android:textSize="22sp"
-        android:textColor="#5D4037"
-        android:background="#D7CCC8"
-        android:padding="16dp"
-        android:layout_marginBottom="24dp"/>
-
-    <!-- Tipo de movimiento -->
-    <TextView
-        android:id="@+id/tvTipoMovimiento"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Tipo: ---"
-        android:textSize="22sp"
-        android:textColor="#283593"
-        android:background="#C5CAE9"
-        android:layout_marginBottom="24sp" />
 
     <!-- Fecha legible -->
     <TextView
@@ -64,5 +40,14 @@
         android:textSize="20sp"
         android:background="#BDBDBD" />
 
+    <!-- Actividad simulada -->
+    <TextView
+        android:id="@+id/tvActividad"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Actividad: ---"
+        android:textSize="20sp"
+        android:textColor="#FFFFFF"
+        android:layout_marginTop="24dp" />
 
 </LinearLayout>

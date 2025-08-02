@@ -70,7 +70,8 @@ class AccelerometerMotionManager(
             val event = MotionEventData(
                 source = if (context.packageName.contains("wear")) "wear" else "mobile",
                 timestamp = currentTime,
-                gravity = gravity
+                gravity = gravity,
+                type = "sensor"  // <-- Agrega este parámetro obligatorio aquí
             )
 
             DataStorage.addEvent(event)
@@ -165,7 +166,8 @@ class AccelerometerMotionManager(
             val event = MotionEventData(
                 source = if (context.packageName.contains("wear")) "wear" else "mobile",
                 timestamp = currentTime,
-                gravity = level
+                gravity = level,
+                type = "simulation"  // <-- Aquí también debe ir
             )
 
             DataStorage.addEvent(event)
