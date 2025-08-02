@@ -28,6 +28,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var tvTimestamp: TextView
     private lateinit var tvTitulo: TextView  // ⬅️ Título dinámico
 
+
     private lateinit var motionManager: AccelerometerMotionManager
     private lateinit var messageManager: MessageManager
 
