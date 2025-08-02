@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var motionManager: AccelerometerMotionManager
     private lateinit var messageManager: MessageManager
 
-    // Cliente Ktor para enviar datos al servidor
+    // Cliente Ktor para enviar datos al servidor ayudame por favor
     private val ktorClient = HttpClient(Android) {
         install(ContentNegotiation) {
             json(Json { ignoreUnknownKeys = true })
