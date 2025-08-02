@@ -26,11 +26,11 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var tvGravedad: TextView
     private lateinit var tvTimestamp: TextView
+    private lateinit var tvTitulo: TextView  // ⬅️ Título dinámico
 
     private lateinit var motionManager: AccelerometerMotionManager
     private lateinit var messageManager: MessageManager
 
-    // Cliente Ktor para enviar datos al servidor
     private val ktorClient = HttpClient(Android) {
         install(ContentNegotiation) {
             json(Json { ignoreUnknownKeys = true })
@@ -48,28 +48,30 @@ class MainActivity : ComponentActivity() {
             startActivity(intent)
         }
 
-        // Referencias a TextViews de gravedad y timestamp
         tvGravedad = findViewById(R.id.tvGravedad)
         tvTimestamp = findViewById(R.id.tvTimestamp)
+        tvTitulo = findViewById(R.id.tvTitulo) // ⬅️ Inicialización del TextView título
 
-        // Inicializa el detector de movimiento con callback para actualizar UI y enviar evento
+        // ⬇️ Inicia esperando movimiento
+        tvTitulo.text = "Esperando\nMovimiento"
+
         motionManager = AccelerometerMotionManager(this) { event ->
             runOnUiThread {
-                updateUI(event) // Actualiza textos en pantalla
-                updateSimulatedLevelUI(event.gravity) // Actualiza barra visual según gravedad
+                updateUI(event)
+                updateSimulatedLevelUI(event.gravity)
+                tvTitulo.text = "Movimiento\nDetectado" // ⬅️ Cambia el título dinámicamente
             }
             Log.d("Mobile", "Evento LOCAL guardado: $event")
-            KtorClient.sendEvent(event) // Envía evento al servidor (TV)
+            KtorClient.sendEvent(event)
         }
 
-        // Si la actividad fue llamada con un nivel simulado, actualiza la UI con ese nivel
         intent.getStringExtra("simulated_level")?.let {
             updateSimulatedLevelUI(it)
             tvGravedad.text = "Gravity: $it"
             tvTimestamp.text = "Timestamp: Simulado"
+            tvTitulo.text = "Movimiento\nDetectado"
         }
 
-        // Inicializa messageManager para escuchar eventos remotos (ej. de Wear OS)
         messageManager = MessageManager(this)
         messageManager.setListener { path, msg ->
             if (path == MessagePaths.MOTION_PATH) {
@@ -84,6 +86,7 @@ class MainActivity : ComponentActivity() {
                 runOnUiThread {
                     updateUI(event)
                     updateSimulatedLevelUI(event.gravity)
+                    tvTitulo.text = "Movimiento\nDetectado"
                 }
                 Log.d("Mobile", "Evento REMOTO guardado: $event")
             }
@@ -92,21 +95,19 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        motionManager.register() // Activa sensor al reanudar actividad
+        motionManager.register()
     }
 
     override fun onPause() {
         super.onPause()
-        motionManager.unregister() // Detiene sensor al pausar actividad
+        motionManager.unregister()
     }
 
-    // Actualiza textos con datos de evento
     private fun updateUI(event: MotionEventData) {
         tvTimestamp.text = "Timestamp: ${event.timestamp}"
         tvGravedad.text = "Gravity: ${event.gravity}"
     }
 
-    // Actualiza la barra de gravedad según nivel simulado o real
     fun updateSimulatedLevelUI(level: String) {
         val barraVerde = findViewById<View>(R.id.barraVerde)
         val barraAmarilla = findViewById<View>(R.id.barraAmarilla)
@@ -116,7 +117,6 @@ class MainActivity : ComponentActivity() {
         val paramsAmarilla = barraAmarilla.layoutParams as LinearLayout.LayoutParams
         val paramsRoja = barraRoja.layoutParams as LinearLayout.LayoutParams
 
-        // Ajusta el peso de cada barra según el nivel recibido
         when (level) {
             "leve" -> {
                 paramsVerde.weight = 3f
@@ -149,7 +149,6 @@ class MainActivity : ComponentActivity() {
         barraAmarilla.layoutParams = paramsAmarilla
         barraRoja.layoutParams = paramsRoja
 
-        // Pide refrescar la UI para aplicar los cambios de peso
         barraVerde.requestLayout()
         barraAmarilla.requestLayout()
         barraRoja.requestLayout()
