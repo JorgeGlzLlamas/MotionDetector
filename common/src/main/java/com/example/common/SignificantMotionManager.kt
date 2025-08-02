@@ -13,30 +13,31 @@ import android.util.Log
 import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
+import org.json.JSONObject
+import java.net.HttpURLConnection
+import java.net.URL
 import kotlin.math.sqrt
 
 class AccelerometerMotionManager(
     private val context: Context,
-    private val onMotionHandled: (MotionEventData) -> Unit // Callback para cuando detecta movimiento
+    private val onMotionHandled: (MotionEventData) -> Unit
 ) : SensorEventListener {
 
     private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
-    private var currentLevel = "" // Nivel actual de gravedad detectado (leve, medio, fuerte)
-    private var lastUpdateTime = 0L // Tiempo de la última actualización para evitar spam
+    private var currentLevel = ""
+    private var lastUpdateTime = 0L
 
-    // Activa el sensor de acelerómetro
     fun register() {
         accelerometer?.let {
             sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL)
         } ?: run {
-            Log.w("AccelerometerMotion", "No hay acelerómetro disponible.") // Si no hay sensor
+            Log.w("AccelerometerMotion", "No hay acelerómetro disponible.")
         }
-        createNotificationChannel() // Crea canal para notificaciones (Android 8+)
+        createNotificationChannel()
     }
 
-    // Detiene el sensor
     fun unregister() {
         sensorManager.unregisterListener(this)
     }
@@ -44,9 +45,8 @@ class AccelerometerMotionManager(
     @RequiresPermission(Manifest.permission.VIBRATE)
     override fun onSensorChanged(event: SensorEvent) {
         val (x, y, z) = event.values
-        val mag = sqrt(x * x + y * y + z * z) // Calcula magnitud del vector aceleración
+        val mag = sqrt(x * x + y * y + z * z)
 
-        // Clasifica la gravedad según magnitud
         val gravity = when {
             mag > 18 -> "fuerte"
             mag > 14 -> "medio"
@@ -56,7 +56,6 @@ class AccelerometerMotionManager(
 
         val currentTime = System.currentTimeMillis()
 
-        // Solo actualiza si el nivel cambia y han pasado 3 segundos desde la última vez
         if (gravity != currentLevel && (currentTime - lastUpdateTime > 3000)) {
             currentLevel = gravity
             lastUpdateTime = currentTime
@@ -64,31 +63,30 @@ class AccelerometerMotionManager(
             Log.d("AccelerometerMotion", "📊 Movimiento: $gravity ($mag)")
 
             if (gravity == "fuerte") {
-                vibrate()        // Vibra en caso de movimiento fuerte
-                sendNotification() // Envía notificación visual
+                vibrate()
+                sendNotification()
             }
 
-            // Crea evento con info del movimiento detectado
             val event = MotionEventData(
                 source = if (context.packageName.contains("wear")) "wear" else "mobile",
                 timestamp = currentTime,
                 gravity = gravity
             )
 
-            DataStorage.addEvent(event) // Guarda evento en almacenamiento local
-            onMotionHandled(event)      // Llama callback para que la UI o quien sea lo procese
+            DataStorage.addEvent(event)
+            onMotionHandled(event)
+            sendToTv(event)
         }
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        // No usado, pero es obligatorio implementarlo
+        // Obligatorio pero no usado
     }
 
     @RequiresPermission(Manifest.permission.VIBRATE)
     private fun vibrate() {
         val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        val pattern = longArrayOf(0, 400, 100, 400, 100, 400) // Patrón de vibración
-
+        val pattern = longArrayOf(0, 400, 100, 400, 100, 400)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
         } else {
@@ -104,7 +102,7 @@ class AccelerometerMotionManager(
                 NotificationManager.IMPORTANCE_HIGH
             )
             val manager = context.getSystemService(NotificationManager::class.java)
-            manager.createNotificationChannel(channel) // Crea canal para notificaciones (Android 8+)
+            manager.createNotificationChannel(channel)
         }
     }
 
@@ -116,10 +114,32 @@ class AccelerometerMotionManager(
             .setPriority(NotificationCompat.PRIORITY_HIGH)
 
         val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        manager.notify(1, builder.build()) // Muestra notificación en pantalla
+        manager.notify(1, builder.build())
     }
 
-    // Método para simular movimiento (para pruebas)
+    private fun sendToTv(event: MotionEventData) {
+        try {
+            val json = JSONObject().apply {
+                put("gravity", event.gravity)
+                put("source", event.source)
+                put("type", event.type)
+                put("timestamp", event.timestamp)
+            }
+
+            val url = URL("http://127.0.0.1:8081")
+            with(url.openConnection() as HttpURLConnection) {
+                requestMethod = "POST"
+                setRequestProperty("Content-Type", "application/json")
+                doOutput = true
+                outputStream.use { it.write(json.toString().toByteArray()) }
+            }
+
+            Log.d("AccelerometerMotion", "📡 Enviado a TV: $json")
+        } catch (e: Exception) {
+            Log.e("AccelerometerMotion", "❌ Error enviando a TV: ${e.message}")
+        }
+    }
+
     @RequiresPermission(Manifest.permission.VIBRATE)
     fun simulateMotionLevel(level: String, overrideMagnitude: Float? = null) {
         val fakeMag = overrideMagnitude ?: when (level) {
@@ -131,7 +151,6 @@ class AccelerometerMotionManager(
 
         val currentTime = System.currentTimeMillis()
 
-        // Solo actualiza si nivel cambia y pasaron más de 3 segundos
         if (level != currentLevel && (currentTime - lastUpdateTime > 3000)) {
             currentLevel = level
             lastUpdateTime = currentTime
@@ -151,6 +170,7 @@ class AccelerometerMotionManager(
 
             DataStorage.addEvent(event)
             onMotionHandled(event)
+            sendToTv(event)
         }
     }
 }
