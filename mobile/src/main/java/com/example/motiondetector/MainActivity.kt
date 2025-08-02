@@ -26,6 +26,7 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var tvGravedad: TextView
     private lateinit var tvTimestamp: TextView
+    private lateinit var tvUltimaAlerta: TextView
 
     private lateinit var motionManager: AccelerometerMotionManager
     private lateinit var messageManager: MessageManager
@@ -41,16 +42,17 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // Referencias a TextViews de gravedad, timestamp y ultima alerta
+        tvGravedad = findViewById(R.id.tvGravedad)
+        tvTimestamp = findViewById(R.id.tvTimestamp)
+        tvUltimaAlerta = findViewById(R.id.tvUltimaAlerta)
+
         // Botón para abrir actividad Actividades
         val btnActividades = findViewById<Button>(R.id.btnActividades)
         btnActividades.setOnClickListener {
             val intent = Intent(this, Actividades::class.java)
             startActivity(intent)
         }
-
-        // Referencias a TextViews de gravedad y timestamp
-        tvGravedad = findViewById(R.id.tvGravedad)
-        tvTimestamp = findViewById(R.id.tvTimestamp)
 
         // Inicializa el detector de movimiento con callback para actualizar UI y enviar evento
         motionManager = AccelerometerMotionManager(this) { event ->
@@ -74,18 +76,22 @@ class MainActivity : ComponentActivity() {
         messageManager.setListener { path, msg ->
             if (path == MessagePaths.MOTION_PATH) {
                 val json = JSONObject(msg)
-                val event = MotionEventData(
-                    source = json.getString("source"),
-                    timestamp = json.getLong("timestamp"),
-                    gravity = json.getString("gravity"),
-                    type = json.getString("type")
-                )
-                DataStorage.addEvent(event)
-                runOnUiThread {
-                    updateUI(event)
-                    updateSimulatedLevelUI(event.gravity)
+                val gravity = json.optString("gravity", "---")
+                val timestampRaw = json.optLong("timestamp", 0L)
+
+                val timestampText = if (timestampRaw > 0) {
+                    val sdf = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss", java.util.Locale.getDefault())
+                    sdf.format(java.util.Date(timestampRaw))
+                } else {
+                    "Desconocido"
                 }
-                Log.d("Mobile", "Evento REMOTO guardado: $event")
+
+                runOnUiThread {
+                    tvGravedad.text = "Gravedad: $gravity"
+                    tvTimestamp.text = "Fecha: $timestampText"
+                    tvUltimaAlerta.text = "Última alerta recibida"
+                    updateSimulatedLevelUI(gravity) // Actualiza barra visual según mensaje recibido
+                }
             }
         }
     }

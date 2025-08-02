@@ -48,17 +48,19 @@ class MainActivity : ComponentActivity() {
 
         // Inicializa los managers
         messageManager = MessageManager(this)
+
         motionManager = AccelerometerMotionManager(this) { event ->
 
             val formattedDate = convertTimestampToDate(event.timestamp)
 
             val data = JSONObject().apply {
                 put("source", event.source)
-                put("timestamp", formattedDate) // fecha legible
+                put("timestamp", event.timestamp) // mantenemos timestamp como Long para Mobile
                 put("gravity", event.gravity)
                 put("type", event.type)
             }
 
+            // Enviar evento a nodos conectados (ej. móvil)
             Wearable.getNodeClient(this).connectedNodes
                 .addOnSuccessListener { nodes ->
                     nodes.forEach { node ->
