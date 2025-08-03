@@ -3,93 +3,138 @@ package com.example.motiondetector
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.ComponentActivity
-import android.view.View
-import android.widget.LinearLayout
 import com.example.common.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.json.JSONObject
-
+import io.ktor.client.*
+import io.ktor.client.engine.android.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
+import kotlinx.serialization.json.Json
 
 class MainActivity : ComponentActivity() {
 
     private lateinit var tvGravedad: TextView
     private lateinit var tvTitulo: TextView
+    private lateinit var tvTimestamp: TextView
 
     private lateinit var motionManager: AccelerometerMotionManager
     private lateinit var messageManager: MessageManager
+
+    private val ktorClient = HttpClient(Android) {
+        install(ContentNegotiation) {
+            json(Json { ignoreUnknownKeys = true })
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Botón para abrir actividad Actividades
+        tvGravedad = findViewById(R.id.tvGravedad)
+        tvTitulo = findViewById(R.id.tvTitulo)
+        tvTimestamp = findViewById(R.id.tvTimestamp)
+
         val btnActividades = findViewById<Button>(R.id.btnActividades)
         btnActividades.setOnClickListener {
             val intent = Intent(this, Actividades::class.java)
             startActivity(intent)
         }
 
-        // Referencias a TextViews
-        tvGravedad = findViewById(R.id.tvGravedad)
-        tvTitulo = findViewById(R.id.tvTitulo)
-
-        // Inicializa el detector de movimiento con callback para actualizar UI y enviar evento
         motionManager = AccelerometerMotionManager(this) { event ->
             runOnUiThread {
-                updateUI(event) // Actualiza textos en pantalla
-                updateSimulatedLevelUI(event.gravity) // Actualiza barra visual según gravedad
+                updateUI(event)
+                updateSimulatedLevelUI(event.gravity)
             }
             Log.d("Mobile", "Evento LOCAL guardado: $event")
-            KtorClient.sendEvent(event) // Envía evento al servidor (TV)
+            sendEventToTv(event)
         }
 
-        // Si la actividad fue llamada con un nivel simulado, actualiza la UI con ese nivel
-        intent.getStringExtra("simulated_level")?.let {
-            updateSimulatedLevelUI(it)
-            tvGravedad.text = "$it"
-            tvTitulo.text = "Movimiento\nDetectado"
-        }
-
-        // Inicializa messageManager para escuchar eventos remotos (ej. de Wear OS)
         messageManager = MessageManager(this)
         messageManager.setListener { path, msg ->
-            if (path == MessagePaths.MOTION_PATH) {
-                val json = JSONObject(msg)
-                val event = MotionEventData(
-                    source = json.getString("source"),
-                    timestamp = json.getLong("timestamp"),
-                    gravity = json.getString("gravity"),
-                    type = json.getString("type")
-                )
-                DataStorage.addEvent(event)
-                runOnUiThread {
-                    updateUI(event)
-                    updateSimulatedLevelUI(event.gravity)
+            when (path) {
+                MessagePaths.MOTION_PATH -> {
+                    val json = JSONObject(msg)
+                    val gravity = json.optString("gravity", "---")
+                    val timestampRaw = json.optLong("timestamp", 0L)
+
+                    val timestampText = if (timestampRaw > 0) {
+                        val sdf = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss", java.util.Locale.getDefault())
+                        sdf.format(java.util.Date(timestampRaw))
+                    } else {
+                        "Desconocido"
+                    }
+
+                    val event = MotionEventData(
+                        source = json.optString("source", "wear"),
+                        timestamp = timestampRaw,
+                        gravity = gravity,
+                        type = json.optString("type", "desconocido")
+                    )
+
+                    DataStorage.addEvent(event)
+
+                    runOnUiThread {
+                        tvGravedad.text = "Gravedad: $gravity"
+                        tvTimestamp.text = "Fecha: $timestampText"
+                        tvTitulo.text = "Movimiento\nDetectado"
+                        updateSimulatedLevelUI(gravity)
+                    }
+                    Log.d("Mobile", "Evento REMOTO guardado: $event")
                 }
-                Log.d("Mobile", "Evento REMOTO guardado: $event")
+
+                "/evento_simulado" -> {
+                    runOnUiThread {
+                        tvGravedad.text = "Evento detectado de wear: $msg"
+                        tvTitulo.text = "Movimiento\nDetectado"
+                        updateSimulatedLevelUI(
+                            when (msg) {
+                                "Caida" -> "fuerte"
+                                "Correr" -> "medio"
+                                "Golpe en mesa" -> "medio-fuerte"
+                                else -> "leve"
+                            }
+                        )
+                    }
+                }
             }
+        }
+
+        // ⬇️ NUEVO: Si regresamos desde Actividades con un nivel simulado
+        intent.getStringExtra("simulated_level")?.let { level ->
+            tvTitulo.text = "Movimiento\nSimulado"
+            tvGravedad.text = "Gravedad: $level"
+            tvTimestamp.text = "Fecha: Simulado"
+            updateSimulatedLevelUI(level)
         }
     }
 
     override fun onResume() {
         super.onResume()
-        motionManager.register() // Activa sensor al reanudar actividad
+        motionManager.register()
     }
 
     override fun onPause() {
         super.onPause()
-        motionManager.unregister() // Detiene sensor al pausar actividad
+        motionManager.unregister()
     }
 
-    // Actualiza textos con datos de evento
     private fun updateUI(event: MotionEventData) {
-        tvGravedad.text = "${event.gravity}"
         tvTitulo.text = "Movimiento\nDetectado"
+        tvGravedad.text = "Gravity: ${event.gravity}"
+        tvTimestamp.text = "Timestamp: ${event.timestamp}"
     }
 
-    // Actualiza la barra de gravedad según nivel simulado o real
     fun updateSimulatedLevelUI(level: String) {
         val barraVerde = findViewById<View>(R.id.barraVerde)
         val barraAmarilla = findViewById<View>(R.id.barraAmarilla)
@@ -99,7 +144,6 @@ class MainActivity : ComponentActivity() {
         val paramsAmarilla = barraAmarilla.layoutParams as LinearLayout.LayoutParams
         val paramsRoja = barraRoja.layoutParams as LinearLayout.LayoutParams
 
-        // Ajusta el peso de cada barra según el nivel recibido
         when (level) {
             "leve" -> {
                 paramsVerde.weight = 3f
@@ -132,9 +176,25 @@ class MainActivity : ComponentActivity() {
         barraAmarilla.layoutParams = paramsAmarilla
         barraRoja.layoutParams = paramsRoja
 
-        // Pide refrescar la UI para aplicar los cambios de peso
         barraVerde.requestLayout()
         barraAmarilla.requestLayout()
         barraRoja.requestLayout()
+    }
+
+    private fun sendEventToTv(event: MotionEventData) {
+        val serverUrl = "http://10.0.2.2:8081/motion"
+        Log.d("Mobile", "🔗 Enviando evento a URL: $serverUrl")
+
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val response = ktorClient.post(serverUrl) {
+                    contentType(ContentType.Application.Json)
+                    setBody(event)
+                }
+                Log.d("Mobile", "Evento enviado a TV: ${response.status}")
+            } catch (e: Exception) {
+                Log.e("Mobile", "Error enviando evento a TV", e)
+            }
+        }
     }
 }
