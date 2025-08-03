@@ -26,7 +26,6 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var tvGravedad: TextView
     private lateinit var tvTitulo: TextView
-    private lateinit var tvTimestamp: TextView
 
     private lateinit var motionManager: AccelerometerMotionManager
     private lateinit var messageManager: MessageManager
@@ -43,7 +42,6 @@ class MainActivity : ComponentActivity() {
 
         tvGravedad = findViewById(R.id.tvGravedad)
         tvTitulo = findViewById(R.id.tvTitulo)
-        tvTimestamp = findViewById(R.id.tvTimestamp)
 
         val btnActividades = findViewById<Button>(R.id.btnActividades)
         btnActividades.setOnClickListener {
@@ -86,7 +84,6 @@ class MainActivity : ComponentActivity() {
 
                     runOnUiThread {
                         tvGravedad.text = "Gravedad: $gravity"
-                        tvTimestamp.text = "Fecha: $timestampText"
                         tvTitulo.text = "Movimiento\nDetectado"
                         updateSimulatedLevelUI(gravity)
                     }
@@ -95,8 +92,14 @@ class MainActivity : ComponentActivity() {
 
                 "/evento_simulado" -> {
                     runOnUiThread {
-                        tvGravedad.text = "Evento detectado de wear: $msg"
-                        tvTitulo.text = "Movimiento\nDetectado"
+                        val gravedad = when (msg) {
+                            "Caida" -> "fuerte"
+                            "Correr" -> "medio"
+                            "Golpe en mesa" -> "medio-fuerte"
+                            else -> "leve"
+                        }
+                        tvGravedad.text = "Gravedad: $gravedad"
+                        tvTitulo.text = "Movimiento detectado en wear:\n $msg"
                         updateSimulatedLevelUI(
                             when (msg) {
                                 "Caida" -> "fuerte"
@@ -112,9 +115,8 @@ class MainActivity : ComponentActivity() {
 
         // ⬇️ NUEVO: Si regresamos desde Actividades con un nivel simulado
         intent.getStringExtra("simulated_level")?.let { level ->
-            tvTitulo.text = "Movimiento\nSimulado"
+            tvTitulo.text = "Movimiento\nDetectado"
             tvGravedad.text = "Gravedad: $level"
-            tvTimestamp.text = "Fecha: Simulado"
             updateSimulatedLevelUI(level)
         }
     }
@@ -131,8 +133,7 @@ class MainActivity : ComponentActivity() {
 
     private fun updateUI(event: MotionEventData) {
         tvTitulo.text = "Movimiento\nDetectado"
-        tvGravedad.text = "Gravity: ${event.gravity}"
-        tvTimestamp.text = "Timestamp: ${event.timestamp}"
+        tvGravedad.text = "Gravedad: ${event.gravity}"
     }
 
     fun updateSimulatedLevelUI(level: String) {

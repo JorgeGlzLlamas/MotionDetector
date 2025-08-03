@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
             .addOnSuccessListener { nodes ->
                 if (nodes.isNotEmpty()) {
                     val deviceName = nodes.joinToString { it.displayName }
-                    tvDeviceStatus.text = "Conectado a: $deviceName"
+                    tvDeviceStatus.text = "Conectado a:\n$deviceName"
                 } else {
                     tvDeviceStatus.text = "Dispositivo no conectado"
                 }
