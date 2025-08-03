@@ -1,47 +1,64 @@
 package com.example.television
 
 import android.os.Bundle
+import android.util.Log
+import android.widget.TextView
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.tv.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.tv.material3.ExperimentalTvMaterial3Api
-import androidx.tv.material3.Surface
-import com.example.television.ui.theme.MotionDetectorTheme
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : ComponentActivity() {
-    @OptIn(ExperimentalTvMaterial3Api::class)
+
+    private lateinit var webServer: WebServer
+    private val dateFormatter = SimpleDateFormat("HH:mm:ss  dd/MM/yyyy", Locale.getDefault())
+
+    private lateinit var tvTitulo: TextView
+    private lateinit var tvMagnitud: TextView
+    private lateinit var tvTimestamp: TextView
+    private lateinit var tvActividad: TextView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent {
-            MotionDetectorTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    shape = RectangleShape
-                ) {
-                    Greeting("Android")
-                }
+        setContentView(R.layout.activity_main)
+
+        Log.d("TV", "🟢 Servidor iniciando…")
+
+        // Referencias a vistas
+        tvTitulo = findViewById(R.id.tvTituloTV)
+        tvMagnitud = findViewById(R.id.tvMagnitud)
+        tvTimestamp = findViewById(R.id.tvTimestamp)
+        tvActividad = findViewById(R.id.tvActividad)
+
+        // Iniciar servidor y escuchar eventos
+        webServer = WebServer { event ->
+            Log.d("TV", "🎯 Evento recibido: $event")
+
+            runOnUiThread {
+                // Cambiar título si hay evento
+                tvTitulo.text = "Movimiento detectado"
+
+                // Mostrar datos del evento
+                tvMagnitud.text = "Gravedad: ${event.gravity}"
+
+                val fechaLegible = dateFormatter.format(Date(event.timestamp))
+                tvTimestamp.text = "Fecha: $fechaLegible"
+
+                val actividad = event.activity ?: "Desconocida"
+                tvActividad.text = "Actividad: $actividad"
             }
         }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            webServer.start()
+        }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MotionDetectorTheme {
-        Greeting("Android")
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("TV", "🛑 Servidor detenido")
+        webServer.stop()
     }
 }

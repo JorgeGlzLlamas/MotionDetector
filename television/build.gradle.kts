@@ -6,11 +6,11 @@ plugins {
 
 android {
     namespace = "com.example.television"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.television"
-        minSdk = 21
+        minSdk = 23
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -40,6 +40,11 @@ android {
 
 dependencies {
     implementation("androidx.leanback:leanback:1.2.0")
+    implementation("io.ktor:ktor-server-core-jvm:2.3.11")
+    implementation("io.ktor:ktor-server-cio-jvm:2.3.11")
+    implementation("io.ktor:ktor-server-content-negotiation-jvm:2.3.11")
+    implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:2.3.11")
+    implementation(project(":common"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(platform(libs.androidx.compose.bom))

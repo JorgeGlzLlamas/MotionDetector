@@ -1,72 +1,89 @@
-/* While this template provides a good starting point for using Wear Compose, you can always
- * take a look at https://github.com/android/wear-os-samples/tree/main/ComposeStarter to find the
- * most up to date changes to the libraries and their usages.
- */
-
 package com.example.motiondetector.presentation
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
+import android.widget.TextView
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.wear.compose.material.MaterialTheme
-import androidx.wear.compose.material.Text
-import androidx.wear.compose.material.TimeText
-import androidx.wear.tooling.preview.devices.WearDevices
-import com.example.motiondetector.R
-import com.example.motiondetector.presentation.theme.MotionDetectorTheme
+import com.example.common.*
+import com.google.android.gms.wearable.Wearable
+import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.*
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var motionManager: AccelerometerMotionManager
+    private lateinit var messageManager: MessageManager
+    private lateinit var tvDeviceStatus: TextView
+    private lateinit var btnActividades: Button
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
-
         super.onCreate(savedInstanceState)
+        setContentView(com.example.motiondetector.R.layout.activity_main)
 
-        setTheme(android.R.style.Theme_DeviceDefault)
+        // Referencias de views
+        tvDeviceStatus = findViewById(com.example.motiondetector.R.id.tvDeviceStatus)
+        btnActividades = findViewById(com.example.motiondetector.R.id.btnActividades)
 
-        setContent {
-            WearApp("Android")
+        // Acción del botón para abrir actividades
+        btnActividades.setOnClickListener {
+            val intent = Intent(this, ActividadesActivity::class.java)
+            startActivity(intent)
         }
-    }
-}
 
-@Composable
-fun WearApp(greetingName: String) {
-    MotionDetectorTheme {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colors.background),
-            contentAlignment = Alignment.Center
-        ) {
-            TimeText()
-            Greeting(greetingName = greetingName)
+        // Mostrar nombre del dispositivo conectado
+        Wearable.getNodeClient(this).connectedNodes
+            .addOnSuccessListener { nodes ->
+                if (nodes.isNotEmpty()) {
+                    val deviceName = nodes.joinToString { it.displayName }
+                    tvDeviceStatus.text = "Conectado a:\n$deviceName"
+                } else {
+                    tvDeviceStatus.text = "Dispositivo no conectado"
+                }
+            }
+            .addOnFailureListener {
+                tvDeviceStatus.text = "Error al verificar conexión"
+            }
+
+        // Inicializa los managers
+        messageManager = MessageManager(this)
+
+        motionManager = AccelerometerMotionManager(this) { event ->
+
+            val formattedDate = convertTimestampToDate(event.timestamp)
+
+            val data = JSONObject().apply {
+                put("source", event.source)
+                put("timestamp", event.timestamp) // mantenemos timestamp como Long para Mobile
+                put("gravity", event.gravity)
+                put("type", event.type)
+            }
+
+            // Enviar evento a nodos conectados (ej. móvil)
+            Wearable.getNodeClient(this).connectedNodes
+                .addOnSuccessListener { nodes ->
+                    nodes.forEach { node ->
+                        messageManager.sendMessage(node.id, MessagePaths.MOTION_PATH, data.toString())
+                    }
+                }
         }
+
+        motionManager.register()
     }
-}
 
-@Composable
-fun Greeting(greetingName: String) {
-    Text(
-        modifier = Modifier.fillMaxWidth(),
-        textAlign = TextAlign.Center,
-        color = MaterialTheme.colors.primary,
-        text = stringResource(R.string.hello_world, greetingName)
-    )
-}
+    override fun onResume() {
+        super.onResume()
+        motionManager.register()
+    }
 
-@Preview(device = WearDevices.SMALL_ROUND, showSystemUi = true)
-@Composable
-fun DefaultPreview() {
-    WearApp("Preview Android")
+    override fun onPause() {
+        super.onPause()
+        motionManager.unregister()
+    }
+
+    private fun convertTimestampToDate(timestamp: Long): String {
+        val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.getDefault())
+        return sdf.format(Date(timestamp))
+    }
 }

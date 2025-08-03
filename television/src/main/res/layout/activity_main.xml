@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layoutTV"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="#121212"
+    android:paddingLeft="64dp"
+    android:paddingRight="64dp"
+    android:paddingTop="48dp"
+    android:paddingBottom="48dp">
+
+    <!-- Título dinámico -->
+    <TextView
+        android:id="@+id/tvTituloTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Esperando movimiento"
+        android:textSize="36sp"
+        android:textStyle="bold"
+        android:textColor="#FFEB3B"
+        android:gravity="center"
+        android:layout_marginBottom="64dp" />
+
+    <!-- Gravedad -->
+    <TextView
+        android:id="@+id/tvMagnitud"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Gravedad: ---"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="#212121"
+        android:background="#4CAF50"
+        android:gravity="center"
+        android:padding="24dp"
+        android:layout_marginBottom="32dp"
+        android:elevation="4dp" />
+
+    <!-- Fecha -->
+    <TextView
+        android:id="@+id/tvTimestamp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Fecha: ---"
+        android:textSize="22sp"
+        android:textColor="#FFFFFF"
+        android:background="#424242"
+        android:gravity="center"
+        android:padding="16dp"
+        android:layout_marginBottom="32dp" />
+
+    <!-- Actividad -->
+    <TextView
+        android:id="@+id/tvActividad"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Actividad: ---"
+        android:textSize="22sp"
+        android:textColor="#FFFFFF"
+        android:background="#616161"
+        android:gravity="center"
+        android:padding="16dp" />
+
+</LinearLayout>

@@ -23,3 +23,4 @@ rootProject.name = "MotionDetector"
 include(":mobile")
 include(":wear")
 include(":television")
+include(":common")

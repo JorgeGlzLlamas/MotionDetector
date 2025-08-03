@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.motiondetector"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.motiondetector"
@@ -39,8 +39,8 @@ android {
 }
 
 dependencies {
-    implementation("com.google.android.gms:play-services-wearable:19.0.0")
-    implementation(libs.play.services.wearable)
+    implementation("com.google.android.gms:play-services-wearable:18.1.0")
+    implementation(project(":common"))
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
@@ -50,9 +50,9 @@ dependencies {
     implementation(libs.androidx.wear.tooling.preview)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.splashscreen)
+    implementation("androidx.wear:wear:1.3.0")
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-    wearApp(project(":wear"))
 }
